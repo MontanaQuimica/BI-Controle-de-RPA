@@ -7,20 +7,28 @@
     <style>
         body {
             background-color: #ffffff;
+            margin: 0;
+            height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
             font-family: Arial, sans-serif;
-            text-align: center;
         }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
         .content h1 {
             font-size: 26px;
             color: #333333;
             margin-bottom: 20px;
+            text-align: center;
         }
+
         .loading {
             border: 8px solid #f3f3f3;
             border-radius: 50%;
@@ -28,10 +36,22 @@
             width: 60px;
             height: 60px;
             animation: spin 2s linear infinite;
+            margin-bottom: 20px;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .image-container {
+            position: absolute;
+            right: 20px;
+            bottom: 0;
+        }
+
+        .image-container img {
+            zoom: 20%;
         }
     </style>
     <script>
@@ -39,24 +59,36 @@
             fetch('https://prod-16.brazilsouth.logic.azure.com/workflows/5a96ea8a9ebd4540a8004dd4fc7d3324/triggers/manual/paths/invoke?api-version=2016-06-01&sp=/triggers/manual/run&sv=1.0&sig=gzBHUddVIAUHEBDsLdj-ixUhZdQcxAg127o6NFLRXes', {
                 method: 'GET',
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status === 200) {
+                    return response.json(); // Retorna o body da resposta em JSON
+                } else {
+                    throw new Error('Erro ao buscar dados da API.');
+                }
+            })
             .then(data => {
-                console.log('Requisição bem-sucedida:', data);
-                // Aqui você pode adicionar código para redirecionar ou exibir outra mensagem se necessário
+                // Atualiza dinamicamente o conteúdo da página
+                document.querySelector('.content h1').innerHTML = `
+                    ${data.mensagem}<br>
+                    ${data.instrucoes}
+                `;
             })
             .catch(error => {
                 console.error('Erro na requisição:', error);
+                document.querySelector('.content h1').textContent = 'Erro ao carregar as informações. Por favor, tente novamente mais tarde.';
             });
         };
     </script>
 </head>
 <body>
-    <div>
-        <img src="image.png" style="zoom: 80%;" alt="Power BI junto ao Power Automate">
+    <div class="container">
+        <div class="content">
+            <h1>Carregando...</h1> <!-- Mensagem padrão inicial -->
+        </div>
+        <div class="loading"></div>
+        <div class="image-container">
+            <img src="image.png" alt="Power Automate">
+        </div>
     </div>
-    <div class="content">
-        <h1>Solicitação Processada com Sucesso!<br>Por favor, feche a página e aguarde alguns minutos para a conclusão da atualização. <br>Após esse tempo, atualize a página para carregar os novos dados.</h1>
-    </div>
-    <div class="loading"></div>
 </body>
 </html>

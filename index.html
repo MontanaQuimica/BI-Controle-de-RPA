@@ -23,14 +23,14 @@
         }
 
         .content h1 {
-            font-size: 26px;
+            font-size: 22px;
             color: #333333;
             margin-bottom: 20px;
             text-align: center;
         }
 
         .loading {
-            border: 8px solid #f3f3f3;
+            border: 10px solid #f3f3f3;
             border-radius: 50%;
             border-top: 6px solid #3498db;
             width: 60px;
@@ -45,7 +45,7 @@
         }
 
         .image-container {
-            position: absolute;
+            position: center;
             right: 20px;
             bottom: 0;
         }
@@ -82,13 +82,13 @@
 </head>
 <body>
     <div class="container">
+        <div class="image-container">
+            <img src="image.png" alt="Power Automate">
+        </div>
         <div class="content">
             <h1>Carregando...</h1> <!-- Mensagem padrão inicial -->
         </div>
         <div class="loading"></div>
-        <div class="image-container">
-            <img src="image.png" alt="Power Automate">
-        </div>
     </div>
 </body>
 </html>

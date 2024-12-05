@@ -13,204 +13,173 @@
             justify-content: center;
             align-items: center;
             font-family: Arial, sans-serif;
+            flex-direction: column;
+            text-align: center;
         }
 
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
-        }
-
-        .content h1 {
-            font-size: 22px;
-            color: #333333;
-            margin-bottom: 20px;
             text-align: center;
         }
 
-        .content a {
-            font-size: 25px;
+        .logo {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            font-size: 20px;
             color: #333333;
             margin-bottom: 20px;
-            text-align: center;
-            text-decoration: none;
-            background-color: #3498db;
-            color: azure;
-            border: 1px solid black;
-            
         }
 
-        .loading {
-            border: 10px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 6px solid #3498db;
-            width: 60px;
-            height: 60px;
-            animation: spin 2s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .image-container {
-            position: center;
-            right: 20px;
-            bottom: 0;
-        }
-
-        .image-container img {
-            zoom: 20%;
-        }
-
-        .button-82-pushable {
+        .progress-container {
             position: relative;
-            border: none;
-            background: transparent;
-            padding: 0;
-            cursor: pointer;
-            outline-offset: 4px;
-            transition: filter 250ms;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
+            width: 120px;
+            height: 120px;
+            display: none; /* Esconde o círculo na primeira etapa */
         }
 
-        .button-82-shadow {
+        .progress-container svg {
+            transform: rotate(-90deg);
+            width: 120px;
+            height: 120px;
+        }
+
+        .progress-container circle {
+            fill: none;
+            stroke-width: 10;
+            stroke-linecap: round;
+        }
+
+        .progress-container .bg {
+            stroke: #f3f3f3;
+        }
+
+        .progress-container .progress {
+            stroke: #3498db;
+            stroke-dasharray: 314.16; /* Circunferência do círculo (2 * PI * raio) */
+            stroke-dashoffset: 314.16; /* Começa vazio */
+            transition: stroke-dashoffset 1s linear; /* Preenchimento contínuo */
+        }
+
+        .progress-text {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 12px;
-            background: hsl(0deg 0% 0% / 0.25);
-            will-change: transform;
-            transform: translateY(2px);
-            transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
         }
 
-        .button-82-edge {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 12px;
-            background: linear-gradient(
-            to left,
-            #0d70ea 0%,
-            #0dccea 8%,
-            #0dccea 92%,
-            #0d70ea 100%
-            );
+        .footer {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555555;
         }
 
-        .button-82-front {
-            display: block;
-            position: relative;
-            padding: 12px 27px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            color: white;
-            background: linear-gradient(#0dccea, #0d70ea);
-            will-change: transform;
-            transform: translateY(-4px);
-            transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
+        .error {
+            color: #e74c3c;
         }
 
-        @media (min-width: 768px) {
-            .button-82-front {
-            font-size: 1.25rem;
-            padding: 12px 42px;
-            }
+        .success {
+            color: #2ecc71;
         }
 
-        .button-82-pushable:hover {
-            filter: brightness(110%);
-            -webkit-filter: brightness(110%);
-        }
-
-        .button-82-pushable:hover .button-82-front {
-            transform: translateY(-6px);
-            transition: transform 250ms cubic-bezier(.3, .7, .4, 1.5);
-        }
-
-        .button-82-pushable:active .button-82-front {
-            transform: translateY(-2px);
-            transition: transform 34ms;
-        }
-
-        .button-82-pushable:hover .button-82-shadow {
-            transform: translateY(4px);
-            transition: transform 250ms cubic-bezier(.3, .7, .4, 1.5);
-        }
-
-        .button-82-pushable:active .button-82-shadow {
-            transform: translateY(1px);
-            transition: transform 34ms;
-        }
-
-        .button-82-pushable:focus:not(:focus-visible) {
-            outline: none;
+        .info {
+            color: #3498db;
         }
     </style>
     <script>
         window.onload = function() {
+            let currentMessage = "Solicitação iniciada !<br>Estamos obtendo os dados para realizar a atualização, por favor aguarde!";
+            let isProcessing = false; // Status para saber se estamos processando
+            let timeLeft = 20; // Tempo de contagem (em segundos)
+
+            // Função para atualizar o texto com base no status
+            function updateMessage(message, isProcessingState = false) {
+                document.querySelector('.message').innerHTML = message;
+                document.querySelector('.progress-container').style.display = isProcessingState ? 'block' : 'none';
+            }
+
+            // Função para atualizar o progresso do círculo
+            function updateProgress(timeLeft) {
+                const progressCircle = document.querySelector('.progress');
+                const progressText = document.querySelector('.progress-text');
+                const progress = (timeLeft / 20) * 314.16; // Calcula o progresso
+                progressCircle.style.strokeDashoffset = progress; // Atualiza o círculo
+                progressText.textContent = timeLeft;
+            }   
+
+            // Função para fechar a janela após o tempo
+            function closeWindow() {
+                window.close(); // Fecha a janela
+            }
+
+            // Primeira etapa: Apenas a mensagem sem o círculo ou a contagem regressiva
+            updateMessage("Solicitação iniciada !<br>Estamos obtendo os dados para realizar a atualização, por favor aguarde!");
+
+            // Chamada à API
             fetch('https://prod-16.brazilsouth.logic.azure.com/workflows/5a96ea8a9ebd4540a8004dd4fc7d3324/triggers/manual/paths/invoke?api-version=2016-06-01&sp=/triggers/manual/run&sv=1.0&sig=gzBHUddVIAUHEBDsLdj-ixUhZdQcxAg127o6NFLRXes', {
                 method: 'GET',
             })
             .then(response => {
                 if (response.status === 200) {
-                    return response.json(); // Retorna o body da resposta em JSON
+                    // Quando a API retornar sucesso
+                    currentMessage = "Solicitação processada com sucesso !!!<br>O conjunto de dados está sendo atualizado, aguarde alguns minutos para a conclusão da atualização e atualize a página!";
+                    isProcessing = true; // Começar o processo
+                    updateMessage(currentMessage, isProcessing);
+
+                    // Começar o cronômetro de 20 segundos para atualizar o progresso
+                    const timer = setInterval(() => {
+                        if (timeLeft > 0) {
+                            timeLeft--;
+                            updateProgress(timeLeft);
+                            // Atualiza a mensagem com a contagem regressiva
+                            document.querySelector('.footer').textContent = `Esta página será fechada em ${timeLeft} segundos.`;
+                        } else {
+                            clearInterval(timer);
+                            document.querySelector('.footer').textContent = "Você pensou, o RPA ja fez :D";
+                            setTimeout(closeWindow, 2000); // Fecha a janela após 2 segundos
+                        }
+                    }, 1000);
+
                 } else {
-                    throw new Error('Erro ao buscar dados da API.');
+                    // Se a requisição falhar
+                    currentMessage = "Solicitação encontrou um erro!<br>Por favor informe ao Departamento de TI via GLPI.<br><a href='https://helpdesk.montana.com.br/front/helpdesk.public.php?create_ticket=1' target='_blank'>Clique aqui para abrir um ticket</a>";
+                    updateMessage(currentMessage);
+                    document.querySelector('.message').classList.add('error');
                 }
             })
-            .then(data => {
-                // Atualiza dinamicamente o conteúdo da página
-                document.querySelector('.content h1').innerHTML = `
-                    ${data.mensagem}<br>
-                    ${data.instrucoes}
-                `;
-            })
             .catch(error => {
+                // Caso haja erro na requisição
                 console.error('Erro na requisição:', error);
-                document.querySelector('.content h1').textContent = 'Erro ao carregar as informações. Por favor, tente novamente mais tarde.';
+                currentMessage = "Solicitação encontrou um erro!<br>Por favor informe ao Departamento de TI via GLPI.<br><a href='https://helpdesk.montana.com.br/front/helpdesk.public.php?create_ticket=1' target='_blank'>Clique aqui para abrir um ticket</a>";
+                updateMessage(currentMessage);
+                document.querySelector('.message').classList.add('error');
             });
         };
-
-        function navigateBack() {
-            // Verifica se há uma página anterior e retorna para ela
-            if (document.referrer) {
-            window.history.back(); // Volta para a página anterior
-            } else {
-            alert("Nenhuma página anterior encontrada.");
-            }
-        }
-        
     </script>
 </head>
 <body>
     <div class="container">
-        <div class="image-container">
-            <img src="image.png" alt="Power Automate">
+        <!-- Exibe logo do Power Automate com tamanho maior -->
+        <div class="logo">
+            <img src="image.png" alt="Power Automate Logo" width="200"> <!-- Logo maior -->
         </div>
-        <div class="content">
-            <h1>Carregando...</h1> <!-- Mensagem padrão inicial -->
+        <div class="message">
+            Solicitação iniciada !<br>Estamos obtendo os dados para realizar a atualização, por favor aguarde!
         </div>
-        <div class="loading"></div>
-        <div class="content">
-            <button class="button-82-pushable" role="button" onclick="navigateBack()">
-                <span class="button-82-shadow"></span>
-                <span class="button-82-edge"></span>
-                <span class="button-82-front text">
-                  Voltar
-                </span>
-              </button>
+        <div class="progress-container">
+            <svg>
+                <circle class="bg" cx="60" cy="60" r="50"></circle>
+                <circle class="progress" cx="60" cy="60" r="50"></circle>
+            </svg>
+            <div class="progress-text"></div>
         </div>
+        <div class="footer"></div> <!-- A mensagem de contagem regressiva não será exibida inicialmente -->
     </div>
 </body>
 </html>
